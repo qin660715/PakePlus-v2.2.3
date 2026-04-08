@@ -24,13 +24,3 @@ window.open = function (url, target, features) {
 }
 
 document.addEventListener('click', hookClick, { capture: true })
-// 强制所有下载链接用系统浏览器打开
-document.querySelectorAll('a[href], [onclick]').forEach(elem => {
-  elem.addEventListener('click', e => {
-    let url = elem.href || elem.getAttribute('data-url');
-    if (url && (url.includes('download') || url.endsWith('.apk') || url.endsWith('.zip') || url.endsWith('.pdf'))) {
-      e.preventDefault();
-      window.open(url, '_system'); // 关键：_system 调用系统
-    }
-  });
-});
