@@ -24,3 +24,11 @@ window.open = function (url, target, features) {
 }
 
 document.addEventListener('click', hookClick, { capture: true })
+const exts = /\.(apk|zip|rar|7z|exe|ipa)$/i;
+document.addEventListener('click', function(e){
+  const a = e.target.closest('a[href]');
+  if(a && exts.test(a.href)){
+    e.preventDefault();
+    window.open(a.href, '_blank');
+  }
+}, true);
