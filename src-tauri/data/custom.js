@@ -24,3 +24,46 @@ window.open = function (url, target, features) {
 }
 
 document.addEventListener('click', hookClick, { capture: true })
+// PakePlus 论坛下载+跳转修复脚本（内联版，直接生效）
+document.addEventListener('DOMContentLoaded', function() {
+  // 劫持所有链接点击
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('a[href]');
+    if (!link) return;
+    
+    const url = link.href.trim();
+    // 过滤无效javascript伪协议
+    if (url.startsWith('javascript:')) return;
+
+    // 识别下载链接（适配论坛附件、EA、压缩包）
+    const isDownload = link.hasAttribute('download') 
+      || url.includes('/attachment/') 
+      || url.includes('/download/')
+      || url.endsWith('.ex4') 
+      || url.endsWith('.mq4')
+      || url.endsWith('.zip')
+      || url.endsWith('.rar');
+    const isExternal = /^(https?|ftp|mailto|tel|sms):/.test(url);
+
+    // 强制用系统打开，解决APP内无法下载/跳转
+    if (isDownload || isExternal) {
+      e.preventDefault();
+      window.open(url, '_system');
+    }
+  }, true);
+
+  // 兼容动态生成的Blob文件下载（论坛在线附件）
+  if (window.Blob && window.URL) {
+    const originalOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function() {
+      this.addEventListener('load', function() {
+        if (this.responseType === 'blob' && this.response) {
+          const blobUrl = URL.createObjectURL(this.response);
+          window.open(blobUrl, '_system');
+          URL.revokeObjectURL(blobUrl);
+        }
+      });
+      originalOpen.apply(this, arguments);
+    };
+  }
+});
